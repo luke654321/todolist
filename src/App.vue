@@ -1,28 +1,76 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="todoapp">
+     <to-header @add="add"></to-header>
+     <to-body :list="showList" @del="del" @select="select"></to-body>
+     <to-footer :current.sync="current" :list="list" @deleteSelect="deleteSelect" ></to-footer>
+    
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+
+import '@/assets/index.css'
+import ToHeader from '@/components/To-Header.vue'
+import ToBody from '@/components/To-Body.vue'
+import ToFooter from '@/components/To-Footer.vue'
 
 export default {
   name: 'App',
+  computed:{
+    showList(){
+      if(this.current=='全部' || this.current=='' ){
+        return this.list
+      }
+      if(this.current=='待办'){
+        return this.list.filter(item=>item.isCheck==false)
+      }
+      if(this.current=='已完成'){
+        return this.list.filter(item=>item.isCheck==true)
+      }
+     
+    }
+  },
+  watch:{
+    list: {
+      handler: function (val) {
+        localStorage.setItem('vue-todo', JSON.stringify(val));
+      },
+      deep: true
+    },
+  
+  },
+  data() {
+    return {
+      current:'',
+      list: JSON.parse(localStorage.getItem('vue-todo')) || []
+    };
+  },
+  methods:{
+    add(text){
+      this.list.push({id:Date.now(),text,isCheck:false})
+    },
+    del(id){
+      this.list=this.list.filter(item=>item.id!=id)
+    },
+    select(id){
+      let item=this.list.find(item=>item.id==id)
+      item.isCheck=!item.isCheck
+    },
+    deleteSelect(){
+      this.list=this.list.filter(item=>item.isCheck==false)
+    },
+   
+  },
   components: {
-    HelloWorld
+    ToHeader,
+    ToBody,
+    ToFooter
   }
 }
 </script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+ 
 }
 </style>
